@@ -1,5 +1,5 @@
 # print('Hello!')
-import numpy as np
+from numpy import expand_dims
 import tensorflow
 
 from tensorflow.keras.models import Model, Sequential
@@ -15,7 +15,7 @@ image_size = 299
 
 def create_model():
     Xception_model = tensorflow.keras.applications.xception.Xception(
-        include_top=False, input_shape=(image_size, image_size, 3), pooling='avg'
+        include_top=False, weights='xception_weights_tf_dim_ordering_tf_kernels_notop.h5', input_shape=(image_size, image_size, 3), pooling='avg'
     )
     Xception_model.trainable = False
     model = Sequential()
@@ -37,14 +37,14 @@ def get_image_array(img_path):
     img = tensorflow.keras.preprocessing.image.load_img(img_path, target_size=(image_size, image_size))
     img_arr = tensorflow.keras.preprocessing.image.img_to_array(img)
     img_arr /= 255
-    img_arr = np.expand_dims(img_arr, axis=0)
+    img_arr = expand_dims(img_arr, axis=0)
     return img_arr
 
 
 def get_predictions(file_path):
     x = get_image_array(f'{file_path}')
     prediction = model.predict(x)
-    return f'cat: {np.round(prediction[0][0] * 100, 4)}%\ndog: {np.round(prediction[0][1] * 100, 4)}%'
+    return f'cat: {round(prediction[0][0] * 100, 4)}%\ndog: {round(prediction[0][1] * 100, 4)}%'
 
 
 model = create_model()
