@@ -1,0 +1,6 @@
+numpy
+flask
+Pillow
+matplotlib
+tensorflow == 2.5.0
+keras == 2.5.0rc0
