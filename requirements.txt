@@ -1,5 +1,4 @@
+Flask
 numpy
-flask
+tensorflow-cpu==2.5.0
 gunicorn
-tensorflow-cpu == 2.5.0
-keras == 2.5.0rc0
