@@ -1,3 +1,4 @@
+PIL
 Flask
 numpy
 tensorflow-cpu==2.5.0
