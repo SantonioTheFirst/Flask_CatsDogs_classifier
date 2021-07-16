@@ -1,33 +1,34 @@
 # print('Hello!')
 from numpy import expand_dims
 import tensorflow
-
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import Dense, Dropout
 
-from flask import Flask, render_template, request, url_for
-# from PIL import Image
+from flask import Flask, render_template, request, url_for, send_from_directory
+from os.path import join
 
 import warnings
 warnings.filterwarnings("ignore")
 
-image_size = 299
+image_size = 224
 
 def create_model():
-    Xception_model = tensorflow.keras.applications.xception.Xception(
-        include_top=False, weights='xception_weights_tf_dim_ordering_tf_kernels_notop.h5', input_shape=(image_size, image_size, 3), pooling='avg'
+    base_model = tensorflow.keras.applications.mobilenet_v2.MobileNetV2(
+        weights=None, include_top=False, input_shape=(image_size, image_size, 3), pooling='avg'
     )
-    Xception_model.trainable = False
+    base_model.load_weights('best_fine_tuned_base_model_weights.h5')
+    base_model.trainable = False
+
     model = Sequential()
-    model.add(Dense(256, activation='relu', input_shape=Xception_model.output_shape[1:]))
+    model.add(Dense(256, activation='relu', input_shape=base_model.output_shape[1:]))
     model.add(Dropout(0.5))
     model.add(Dense(128, activation='relu'))
     model.add(Dropout(0.5))
     model.add(Dense(64, activation='relu'))
     model.add(Dropout(0.5))
     model.add(Dense(2, activation='softmax'))
-    model.load_weights('model_weights')
-    final_model = Model(inputs=Xception_model.input, outputs=model(Xception_model.output))
+    model.load_weights('best_fine_tuned_custom_model_weights.h5')
+    final_model = Model(inputs=base_model.input, outputs=model(base_model.output))
     final_model.compile(loss='categorical_crossentropy',
      optimizer=tensorflow.keras.optimizers.Adam(learning_rate=1e-5), metrics=['accuracy'])
     return final_model
@@ -52,8 +53,15 @@ model = create_model()
 
 app = Flask(__name__)
 
+
+@app.route("/favicon.ico")
+def favicon():
+	return send_from_directory(join(app.root_path, 'static'),'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+
 @app.route('/')
 def main_page():
+    print(url_for('static', filename='favicon.ico'))
     return render_template('index.html')
 
 
@@ -81,6 +89,8 @@ def upload_image():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    # app.add_url_rule('/favicon.ico',
+    #                  redirect_to=url_for('static', filename='favicon.ico'))
 
 
 
